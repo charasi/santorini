@@ -19,7 +19,7 @@ const app = new Application();
 
   // Add the animation callbacks to the application's ticker.
   app.ticker.add((time) => {
-    time.count;
+    //time.count;
     waterWaves();
   });
 })();
