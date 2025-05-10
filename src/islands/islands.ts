@@ -1,9 +1,13 @@
-import { loadMapAssets, mapData, getMapTexture } from "../misc/misc.ts";
+import {
+  loadMapAssets,
+  mapData,
+  getMapTexture,
+  palmTileTexture,
+} from "../misc/misc.ts";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
-import { Application, Texture } from "pixi.js";
+import { Application, Sprite, Texture } from "pixi.js";
 
 export const addIsland = async (app: Application) => {
-  //settings.TEXTILE_SCALE_MODE = SCALE_MODES.NEAREST;
   await loadMapAssets();
 
   if (!mapData) {
@@ -62,4 +66,32 @@ export const addIsland = async (app: Application) => {
   }
 
   app.stage.addChild(tilemap);
+
+  // Handle palm trees from object layer inside group layer
+  const groupLayer = mapData.layers.find((l) => l.type === "group");
+  if (!groupLayer || !groupLayer.layers) return;
+
+  const objectLayer = groupLayer.layers.find(
+    (l: any) => l.type === "objectgroup" && l.name === "palm-tree",
+  );
+
+  if (!objectLayer || !objectLayer.objects) return;
+
+  objectLayer.objects.forEach((object: any) => {
+    if (object.gid === 3) {
+      const x = object.x;
+      const y = object.y;
+
+      const isoX = x - y + tileWidth / 2;
+      const isoY = (x + y) / 2;
+
+      const drawX = Math.round(isoX + offsetX);
+      const drawY = Math.round(isoY + offsetY);
+
+      const palm = new Sprite(palmTileTexture!);
+      palm.anchor.set(0.5, 1); // Center horizontally, bottom vertically
+      palm.position.set(drawX, drawY);
+      tilemap.addChild(palm);
+    }
+  });
 };
