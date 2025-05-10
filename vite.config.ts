@@ -11,7 +11,7 @@ export default defineConfig({
     alias: {
       "@tilemap/CompositeTilemap": path.resolve(
         __dirname,
-        "src/vendor/pixi-tilemap/src/index_old.ts",
+        "src/vendor/pixi-tilemap/src/index.ts",
       ),
     },
   },

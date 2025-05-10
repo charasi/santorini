@@ -1,4 +1,8 @@
-import { Application, Assets, Renderer } from "pixi.js";
+import { Application, Assets, Renderer, Texture } from "pixi.js";
+
+export let mapData: any = null;
+export let waterTexture: Texture | null = null;
+export let blockTileTexture: Texture | null = null;
 
 /**
  * Sets up the PixiJS application with initial configuration.
@@ -14,6 +18,13 @@ export const setup = async (app: Application<Renderer>): Promise<void> => {
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 };
 
+// add bundle of asssets
+Assets.addBundle("mapAssets", {
+  mapData: "/src/json/santorini-map.json",
+  waterTexture: "/assets/water.png",
+  blockTileTexture: "/assets/block-tile.png",
+});
+
 /**
  * Loads map-related assets asynchronously using PixiJS Assets loader.
  *
@@ -24,9 +35,21 @@ export const setup = async (app: Application<Renderer>): Promise<void> => {
  *    - tilesetTexture: the loaded tileset image as a PixiJS texture.
  */
 export const loadMapAssets = async () => {
-  const [mapData, tilesetTexture] = await Promise.all([
-    Assets.load("/src/json/santorini-map.json"),
-    Assets.load("/assets/santorini-map.png"),
-  ]);
-  return { mapData, tilesetTexture };
+  // Load the assets from the "mapAssets" bundle
+  const assets = await Assets.loadBundle("mapAssets");
+  // Assign the loaded assets to the exported variables
+  mapData = assets.mapData; // JSON map data
+  waterTexture = assets.waterTexture as Texture; // Water texture
+  blockTileTexture = assets.blockTileTexture as Texture; // Block tile texture
+};
+
+export const getMapTexture = (gid: number) => {
+  switch (gid) {
+    case 1:
+      return waterTexture;
+    case 2:
+      return blockTileTexture;
+    default:
+      return null;
+  }
 };
