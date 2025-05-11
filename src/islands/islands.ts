@@ -3,6 +3,7 @@ import {
   mapData,
   getMapTexture,
   palmTileTexture,
+  rockTileTexture,
 } from "../misc/misc.ts";
 import { Application, Texture, Sprite, Container } from "pixi.js";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
@@ -28,7 +29,7 @@ export const addIsland = async (app: Application) => {
   const mapContainer = new Container();
   const tilemap = new CompositeTilemap();
 
-  // 1. Add base tiles
+  // 1. Add base tiles in isometric projection
   for (let i = 0; i < tileLayer.data.length; i++) {
     const gid = tileLayer.data[i];
     if (gid === 0) continue;
@@ -43,65 +44,55 @@ export const addIsland = async (app: Application) => {
     if (!baseTexture) continue;
 
     const texture = new Texture(baseTexture);
-    const drawY = isoY - (texture.height - tileHeight); // Align tile base
+    const drawY = isoY - (texture.height - tileHeight); // Align base tile vertically
 
     tilemap.tile(texture, isoX, drawY);
   }
 
-  mapContainer.addChild(tilemap);
+  //mapContainer.addChild(tilemap);
 
-  // 2. Add palm trees from object layer
-  const groupLayer = mapData.layers.find(
-    (l) => l.type === "group" && l.name === "Environments",
-  );
-  if (groupLayer && groupLayer.layers) {
-    const palmLayer = groupLayer.layers.find(
-      (l) => l.name === "palm-tree" && l.type === "objectgroup",
-    );
-
-    console.log("Palm objects:", palmLayer.objects);
-    let x;
-    x = 0;
-    let y;
-    y = 0;
-    if (palmLayer && palmLayer.objects) {
-      for (const obj of palmLayer.objects) {
-        if (obj.gid === 3 && palmTileTexture) {
-          // Convert object pixel (world) position to isometric screen position
-          const isoX = (obj.x - obj.y) * (tileWidth / 2);
-          const isoY = (obj.x + obj.y) * (tileHeight / 2);
-
-          console.log("Adding palm at", obj.x, obj.y);
-
-          const palm = new Sprite(palmTileTexture);
-          //palm.anchor.set(0.5, 1); // Align base
-          palm.position.set(x, y);
-          x = x + 10;
-          y = y + 15;
-
-          mapContainer.addChild(palm);
-          console.log(mapContainer);
-        }
-      }
-    }
+  // 2. Add palm trees from object layer inside group layer
+  const groupLayer = mapData.layers.find((l) => l.type === "group");
+  if (!groupLayer || !groupLayer.layers) {
+    console.warn("No environment group layer found.");
+    return;
   }
 
-  /**
-   // 3. Center map on screen
-   const mapHeight = mapData.height;
-
-   const screenWidth = 1280;
-   const screenHeight = 720;
-   //const mapPixelWidth = (mapWidth + mapHeight) * (tileWidth / 2);
-   const mapPixelHeight = (mapWidth + mapHeight) * (tileHeight / 2);
-  mapContainer.position.set(
-    screenWidth / 2,
-    screenHeight / 2 - mapPixelHeight / 2,
+  const objectLayer = groupLayer.layers.find(
+    (l: any) => l.type === "objectgroup" && l.name === "palm-tree",
   );
-      */
 
-  mapContainer.x = app.screen.width / 2 - 100;
-  mapContainer.y = app.screen.height / 2 - 300;
+  if (!objectLayer || !objectLayer.objects) {
+    console.warn("No palm tree objects found.");
+    return;
+  }
 
+  objectLayer.objects.forEach((object: any) => {
+    //if (object.gid === 3) {
+    const x = object.x;
+    const y = object.y;
+
+    const isoX = x - y + tileWidth / 2;
+    const isoY = (x + y) / 2;
+
+    const drawX = Math.round(isoX);
+    const drawY = Math.round(isoY);
+
+    const baseTexture = getMapTexture(object.gid);
+
+    const palm = new Sprite(baseTexture!);
+    palm.anchor.set(0.5, 1); // Center horizontally, bottom vertically
+    palm.position.set(drawX, drawY);
+    tilemap.addChild(palm);
+    //}
+  });
+
+  mapContainer.addChild(tilemap);
+  // Update map container's position (centered)
+  mapContainer.position.set(
+    app.screen.width / 2 - 100,
+    app.screen.height / 2 - 300,
+  );
+  // 3. Add map container to the stage after setting its position
   app.stage.addChild(mapContainer);
 };

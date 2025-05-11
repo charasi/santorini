@@ -4,6 +4,7 @@ export let mapData: any = null;
 export let waterTexture: Texture | null = null;
 export let blockTileTexture: Texture | null = null;
 export let palmTileTexture: Texture | null = null;
+export let rockTileTexture: Texture | null = null;
 
 /**
  * Sets up the PixiJS application with initial configuration.
@@ -25,6 +26,7 @@ Assets.addBundle("mapAssets", {
   waterTexture: "/assets/water.png",
   blockTileTexture: "/assets/block-tile.png",
   palmTileTexture: "/assets/palm.png",
+  rockTileTexture: "/assets/rock.png",
 });
 
 /**
@@ -44,6 +46,7 @@ export const loadMapAssets = async () => {
   waterTexture = assets.waterTexture as Texture; // Water texture
   blockTileTexture = assets.blockTileTexture as Texture; // Block tile texture
   palmTileTexture = assets.palmTileTexture as Texture; // Palm tree texture
+  rockTileTexture = assets.rockTileTexture as Texture;
 };
 
 export const getMapTexture = (gid: number) => {
@@ -54,6 +57,8 @@ export const getMapTexture = (gid: number) => {
       return blockTileTexture;
     case 3:
       return palmTileTexture; // Add palm tree texture
+    case 4:
+      return rockTileTexture;
     default:
       console.warn(`No texture for GID: ${gid}`); // Handle unassigned GIDs gracefully
       return null;
