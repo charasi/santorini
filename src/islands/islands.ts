@@ -4,8 +4,8 @@ import {
   getMapTexture,
   palmTileTexture,
 } from "../misc/misc.ts";
+import { Application, Texture, Sprite, Container } from "pixi.js";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
-import { Application, Sprite, Texture } from "pixi.js";
 
 export const addIsland = async (app: Application) => {
   await loadMapAssets();
@@ -18,32 +18,19 @@ export const addIsland = async (app: Application) => {
   const tileWidth = mapData.tilewidth;
   const tileHeight = mapData.tileheight;
   const mapWidth = mapData.width;
-  const mapHeight = mapData.height;
 
-  const screenWidth = 1280;
-  const screenHeight = 720;
+  const tileLayer = mapData.layers.find((l) => l.name === "islands");
+  if (!tileLayer || tileLayer.type !== "tilelayer") {
+    console.error("No valid tile layer found");
+    return;
+  }
 
-  const layer = mapData.layers[0];
+  const mapContainer = new Container();
   const tilemap = new CompositeTilemap();
 
-  // Estimate max tile draw height for overflow adjustment
-  const estimatedMaxTileHeight = 74;
-
-  // Compute bounding box of isometric map
-  const minIsoX = (0 - (mapHeight - 1)) * (tileWidth / 2);
-  const maxIsoX = (mapWidth - 1) * (tileWidth / 2);
-
-  const minIsoY = tileHeight / 2;
-  const maxIsoY = (mapWidth - 1 + (mapHeight - 1)) * (tileHeight / 2);
-
-  const mapPixelWidth = maxIsoX - minIsoX + tileWidth;
-  const mapPixelHeight = maxIsoY - minIsoY + estimatedMaxTileHeight;
-
-  const offsetX = (screenWidth - mapPixelWidth) / 2 - minIsoX;
-  const offsetY = (screenHeight - mapPixelHeight) / 2 - minIsoY;
-
-  for (let i = 0; i < layer.data.length; i++) {
-    const gid = layer.data[i];
+  // 1. Add base tiles
+  for (let i = 0; i < tileLayer.data.length; i++) {
+    const gid = tileLayer.data[i];
     if (gid === 0) continue;
 
     const col = i % mapWidth;
@@ -55,43 +42,66 @@ export const addIsland = async (app: Application) => {
     const baseTexture = getMapTexture(gid);
     if (!baseTexture) continue;
 
-    const tileTexture = new Texture(baseTexture);
+    const texture = new Texture(baseTexture);
+    const drawY = isoY - (texture.height - tileHeight); // Align tile base
 
-    const drawX = Math.round(isoX + offsetX);
-    const drawY = Math.round(
-      isoY + offsetY - (tileTexture.height - tileHeight),
-    );
-
-    tilemap.tile(tileTexture, drawX, drawY);
+    tilemap.tile(texture, isoX, drawY);
   }
 
-  app.stage.addChild(tilemap);
+  mapContainer.addChild(tilemap);
 
-  // Handle palm trees from object layer inside group layer
-  const groupLayer = mapData.layers.find((l) => l.type === "group");
-  if (!groupLayer || !groupLayer.layers) return;
-
-  const objectLayer = groupLayer.layers.find(
-    (l: any) => l.type === "objectgroup" && l.name === "palm-tree",
+  // 2. Add palm trees from object layer
+  const groupLayer = mapData.layers.find(
+    (l) => l.type === "group" && l.name === "Environments",
   );
+  if (groupLayer && groupLayer.layers) {
+    const palmLayer = groupLayer.layers.find(
+      (l) => l.name === "palm-tree" && l.type === "objectgroup",
+    );
 
-  if (!objectLayer || !objectLayer.objects) return;
+    console.log("Palm objects:", palmLayer.objects);
+    let x;
+    x = 0;
+    let y;
+    y = 0;
+    if (palmLayer && palmLayer.objects) {
+      for (const obj of palmLayer.objects) {
+        if (obj.gid === 3 && palmTileTexture) {
+          // Convert object pixel (world) position to isometric screen position
+          const isoX = (obj.x - obj.y) * (tileWidth / 2);
+          const isoY = (obj.x + obj.y) * (tileHeight / 2);
 
-  objectLayer.objects.forEach((object: any) => {
-    if (object.gid === 3) {
-      const x = object.x;
-      const y = object.y;
+          console.log("Adding palm at", obj.x, obj.y);
 
-      const isoX = x - y + tileWidth / 2;
-      const isoY = (x + y) / 2;
+          const palm = new Sprite(palmTileTexture);
+          //palm.anchor.set(0.5, 1); // Align base
+          palm.position.set(x, y);
+          x = x + 10;
+          y = y + 15;
 
-      const drawX = Math.round(isoX + offsetX);
-      const drawY = Math.round(isoY + offsetY);
-
-      const palm = new Sprite(palmTileTexture!);
-      palm.anchor.set(0.5, 1); // Center horizontally, bottom vertically
-      palm.position.set(drawX, drawY);
-      tilemap.addChild(palm);
+          mapContainer.addChild(palm);
+          console.log(mapContainer);
+        }
+      }
     }
-  });
+  }
+
+  /**
+   // 3. Center map on screen
+   const mapHeight = mapData.height;
+
+   const screenWidth = 1280;
+   const screenHeight = 720;
+   //const mapPixelWidth = (mapWidth + mapHeight) * (tileWidth / 2);
+   const mapPixelHeight = (mapWidth + mapHeight) * (tileHeight / 2);
+  mapContainer.position.set(
+    screenWidth / 2,
+    screenHeight / 2 - mapPixelHeight / 2,
+  );
+      */
+
+  mapContainer.x = app.screen.width / 2 - 100;
+  mapContainer.y = app.screen.height / 2 - 300;
+
+  app.stage.addChild(mapContainer);
 };
