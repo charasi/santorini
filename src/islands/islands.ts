@@ -1,12 +1,10 @@
-import {
-  loadMapAssets,
-  mapData,
-  getMapTexture,
-  palmTileTexture,
-  rockTileTexture,
-} from "../misc/misc.ts";
+import { loadMapAssets, mapData, getMapTexture } from "../misc/misc.ts";
 import { Application, Texture, Sprite, Container } from "pixi.js";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
+import { oakTreeAnimation } from "../animations/oak-tree.ts";
+
+const mapContainer = new Container();
+const tilemap = new CompositeTilemap();
 
 export const addIsland = async (app: Application) => {
   await loadMapAssets();
@@ -25,9 +23,6 @@ export const addIsland = async (app: Application) => {
     console.error("No valid tile layer found");
     return;
   }
-
-  const mapContainer = new Container();
-  const tilemap = new CompositeTilemap();
 
   // 1. Add base tiles in isometric projection
   for (let i = 0; i < tileLayer.data.length; i++) {
@@ -49,42 +44,44 @@ export const addIsland = async (app: Application) => {
     tilemap.tile(texture, isoX, drawY);
   }
 
-  //mapContainer.addChild(tilemap);
-
-  // 2. Add palm trees from object layer inside group layer
+  // 2. Add all objects from all object layers inside the group layer
   const groupLayer = mapData.layers.find((l) => l.type === "group");
   if (!groupLayer || !groupLayer.layers) {
     console.warn("No environment group layer found.");
     return;
   }
 
-  const objectLayer = groupLayer.layers.find(
-    (l: any) => l.type === "objectgroup" && l.name === "palm-tree",
-  );
+  // Loop through each object layer inside the group
+  groupLayer.layers.forEach((layer: any) => {
+    if (layer.type === "objectgroup" && layer.objects) {
+      layer.objects.forEach((object: any) => {
+        const x = object.x;
+        const y = object.y;
 
-  if (!objectLayer || !objectLayer.objects) {
-    console.warn("No palm tree objects found.");
-    return;
-  }
+        const isoX = x - y + tileWidth / 2;
+        const isoY = (x + y) / 2;
 
-  objectLayer.objects.forEach((object: any) => {
-    //if (object.gid === 3) {
-    const x = object.x;
-    const y = object.y;
+        const drawX = Math.round(isoX);
+        const drawY = Math.round(isoY);
 
-    const isoX = x - y + tileWidth / 2;
-    const isoY = (x + y) / 2;
+        if (object.name === "oak") {
+          const oak = oakTreeAnimation(drawX, drawY); // Pass position
+          tilemap.addChild(oak); // Add to the tilemap
+          return;
+        }
 
-    const drawX = Math.round(isoX);
-    const drawY = Math.round(isoY);
+        const baseTexture = getMapTexture(object.gid);
+        if (!baseTexture) {
+          console.warn("Missing texture for gid:", object.gid);
+          return;
+        }
 
-    const baseTexture = getMapTexture(object.gid);
-
-    const palm = new Sprite(baseTexture!);
-    palm.anchor.set(0.5, 1); // Center horizontally, bottom vertically
-    palm.position.set(drawX, drawY);
-    tilemap.addChild(palm);
-    //}
+        const sprite = new Sprite(baseTexture);
+        sprite.anchor.set(0.5, 1);
+        sprite.position.set(drawX, drawY);
+        tilemap.addChild(sprite);
+      });
+    }
   });
 
   mapContainer.addChild(tilemap);

@@ -1,10 +1,10 @@
 import { Application, Assets, Renderer, Texture } from "pixi.js";
 
 export let mapData: any = null;
-export let waterTexture: Texture | null = null;
-export let blockTileTexture: Texture | null = null;
-export let palmTileTexture: Texture | null = null;
-export let rockTileTexture: Texture | null = null;
+export let waterTexture: Texture;
+export let blockTileTexture: Texture;
+export let palmTileTexture: Texture;
+export let rockTileTexture: Texture;
 
 /**
  * Sets up the PixiJS application with initial configuration.
@@ -21,13 +21,36 @@ export const setup = async (app: Application<Renderer>): Promise<void> => {
 };
 
 // add bundle of asssets
-Assets.addBundle("mapAssets", {
-  mapData: "/src/json/santorini-map.json",
-  waterTexture: "/assets/water.png",
-  blockTileTexture: "/assets/block-tile.png",
-  palmTileTexture: "/assets/palm.png",
-  rockTileTexture: "/assets/rock.png",
-});
+await Assets.load([
+  {
+    alias: "mapData",
+    src: "/src/json/santorini-map.json",
+  },
+  {
+    alias: "waterTexture",
+    src: "/assets/water.png",
+  },
+  {
+    alias: "blockTileTexture",
+    src: "/assets/block-tile.png",
+  },
+  {
+    alias: "palmTileTexture",
+    src: "/assets/palm.png",
+  },
+  {
+    alias: "rockTileTexture",
+    src: "/assets/rock.png",
+  },
+  {
+    alias: "oakTreeSkeleton",
+    src: "/src/json/oak-tree.json",
+  },
+  {
+    alias: "oakTreeAtlas",
+    src: "/src/atlas/oak-tree.atlas",
+  },
+]);
 
 /**
  * Loads map-related assets asynchronously using PixiJS Assets loader.
@@ -39,14 +62,12 @@ Assets.addBundle("mapAssets", {
  *    - tilesetTexture: the loaded tileset image as a PixiJS texture.
  */
 export const loadMapAssets = async () => {
-  // Load the assets from the "mapAssets" bundle
-  const assets = await Assets.loadBundle("mapAssets");
   // Assign the loaded assets to the exported variables
-  mapData = assets.mapData; // JSON map data
-  waterTexture = assets.waterTexture as Texture; // Water texture
-  blockTileTexture = assets.blockTileTexture as Texture; // Block tile texture
-  palmTileTexture = assets.palmTileTexture as Texture; // Palm tree texture
-  rockTileTexture = assets.rockTileTexture as Texture;
+  mapData = Assets.get("mapData"); // JSON map data
+  waterTexture = Texture.from("waterTexture"); // Water texture
+  blockTileTexture = Texture.from("blockTileTexture"); // Block tile texture
+  palmTileTexture = Texture.from("palmTileTexture"); // Palm tree texture
+  rockTileTexture = Texture.from("rockTileTexture");
 };
 
 export const getMapTexture = (gid: number) => {

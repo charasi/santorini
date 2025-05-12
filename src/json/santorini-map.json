@@ -40,7 +40,7 @@
                         {
                          "height":31,
                          "id":8,
-                         "name":"",
+                         "name":"oak",
                          "properties":[
                                 {
                                  "name":"animation",
@@ -66,13 +66,13 @@
                          "type":"",
                          "visible":true,
                          "width":33.5,
-                         "x":285,
-                         "y":318.5
+                         "x":95.5,
+                         "y":94
                         }, 
                         {
                          "height":31,
                          "id":10,
-                         "name":"",
+                         "name":"oak",
                          "properties":[
                                 {
                                  "name":"animation",
@@ -98,7 +98,7 @@
                          "type":"",
                          "visible":true,
                          "width":33.5,
-                         "x":382,
+                         "x":478,
                          "y":319.5
                         }],
                  "opacity":1,
