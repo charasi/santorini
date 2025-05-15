@@ -2,9 +2,14 @@ import { loadMapAssets, mapData, getMapTexture } from "../misc/misc.ts";
 import { Application, Texture, Sprite, Container } from "pixi.js";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
 import { oakTreeAnimation } from "../animations/oak-tree.ts";
+import { Board } from "../core/Board.ts";
+import { Cell } from "../core/Cell.ts";
+import { GlowFilter } from "pixi-filters";
 
-const mapContainer = new Container();
-const tilemap = new CompositeTilemap();
+export const mapContainer = new Container();
+export const tilemap = new CompositeTilemap();
+export const gameBoard = new Board();
+export const objectLayerContainer = new Container();
 
 export const addIsland = async (app: Application) => {
   await loadMapAssets();
@@ -51,6 +56,65 @@ export const addIsland = async (app: Application) => {
     return;
   }
 
+  objectLayerContainer.x = mapContainer.x;
+  objectLayerContainer.y = mapContainer.y;
+
+  groupLayer.layers.forEach((layer: any) => {
+    if (layer.type === "objectgroup" && layer.objects) {
+      layer.objects.forEach((object: any) => {
+        const x = object.x;
+        const y = object.y;
+
+        const isoX = x - y + tileWidth / 2;
+        const isoY = (x + y) / 2;
+
+        const drawX = Math.round(isoX);
+        const drawY = Math.round(isoY);
+
+        if (object.name === "oak") {
+          const oak = oakTreeAnimation(drawX, drawY); // Pass position
+          objectLayerContainer.addChild(oak); // Add to the tilemap
+          return;
+        }
+
+        if (object.name === "Tiles") {
+          const cell_no: number = object.properties[0].value;
+          const row = Math.floor((cell_no - 1) / 5);
+          const col = (cell_no - 1) % 5;
+
+          const container = new Container();
+          //container.x = drawX;
+          //container.y = drawY;
+          container.position.set(drawX, drawY);
+          const cell = new Cell(container);
+          gameBoard.setCell(row, col, cell);
+          container.filters = [
+            new GlowFilter({
+              alpha: 1,
+              innerStrength: 16,
+              outerStrength: 16.5,
+            }),
+          ];
+          console.log(container);
+          objectLayerContainer.addChild(container);
+          return;
+        }
+
+        const baseTexture = getMapTexture(object.gid);
+        if (!baseTexture) {
+          console.warn("Missing texture for gid:", object.gid);
+          return;
+        }
+
+        const sprite = new Sprite(baseTexture);
+        sprite.anchor.set(0.5, 1);
+        sprite.position.set(drawX, drawY);
+        tilemap.addChild(sprite);
+      });
+    }
+  });
+
+  /**
   // Loop through each object layer inside the group
   groupLayer.layers.forEach((layer: any) => {
     if (layer.type === "objectgroup" && layer.objects) {
@@ -70,6 +134,29 @@ export const addIsland = async (app: Application) => {
           return;
         }
 
+        if (object.name === "Tiles") {
+          const cell_no: number = object.properties[0].value;
+          const row = Math.floor((cell_no - 1) / 5);
+          const col = (cell_no - 1) % 5;
+
+          const container = new Container();
+          //container.x = drawX;
+          //container.y = drawY;
+          container.position.set(drawX, drawY);
+          const cell = new Cell(container);
+          gameBoard.setCell(row, col, cell);
+          container.filters = [
+            new GlowFilter({
+              alpha: 1,
+              innerStrength: 16,
+              outerStrength: 16.5,
+            }),
+          ];
+          console.log(container);
+          tilemap.addChild(container);
+          return;
+        }
+
         const baseTexture = getMapTexture(object.gid);
         if (!baseTexture) {
           console.warn("Missing texture for gid:", object.gid);
@@ -83,8 +170,10 @@ export const addIsland = async (app: Application) => {
       });
     }
   });
+      */
 
   mapContainer.addChild(tilemap);
+  mapContainer.addChild(objectLayerContainer);
   // Update map container's position (centered)
   mapContainer.position.set(
     app.screen.width / 2 - 100,

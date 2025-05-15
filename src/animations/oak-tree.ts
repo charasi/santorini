@@ -1,6 +1,5 @@
 import { Spine } from "@esotericsoftware/spine-pixi-v8";
 
-// Updated function to position the oak tree and return the sprite with the animation
 export const oakTreeAnimation = (x: number, y: number) => {
   console.log("oakTreeAnimation");
 
@@ -9,31 +8,36 @@ export const oakTreeAnimation = (x: number, y: number) => {
     atlas: "oakTreeAtlas",
   });
 
-  // Now safe to get bounds
+  // Get bounds to scale
   const bounds = oakTree.getBounds();
   const scaleX = 128 / bounds.width;
   const scaleY = 150 / bounds.height;
   oakTree.scale.set(scaleX, scaleY);
 
-  // Set animation
+  // Set the animation
   oakTree.state.setAnimation(0, "waves", true);
 
-  //const entry = oakTree.state.addAnimation(0, "waves", true, 0);
+  // Position tree (shift up to sit on the tile nicely)
+  oakTree.position.set(x, y - oakTree.height * 0.5);
 
-  // Set the animation to reverse
-  //entry.reverse = true;
+  // Shadow direction (in radians)
 
-  //oakTree.width / 2, oakTree.height;
-
-  // Adjust pivot if necessary (e.g., center bottom)
-  //oakTree.pivot.set(0.5, 1);
-  oakTree.position.set(x, y - oakTree.height * 0.5); // Slight upward shift
-
-  //oakTree.pivot.set(oakTree.width / 2, oakTree.height);
-  //oakTree.pivot.set(0.5, 0);
-
-  // Position the skeleton
-  //oakTree.position.set(x, y);
+  /**
+  // ✅ Add drop shadow filter
+  oakTree.filters = [
+    new DropShadowFilter({
+      alpha: 0.423,
+      blur: 0,
+      color: 0x000000,
+      kernels: [0, 0],
+      //offset: { x: -30, y: -4 },
+      offset: { x: 50, y: 50 },
+      pixelSize: [1, 1],
+      quality: 4,
+      shadowOnly: false, // true = only shadow, false = object + shadow
+    }),
+  ];
+      */
 
   return oakTree;
 };
