@@ -49,7 +49,7 @@ export const addIsland = async (app: Application) => {
     tilemap.tile(texture, isoX, drawY);
   }
 
-  // 2. Add all objects from all object layers inside the group layer
+  // 2. Add all objects from all object layers inside the group layer, with depth sorting
   const groupLayer = mapData.layers.find((l) => l.type === "group");
   if (!groupLayer || !groupLayer.layers) {
     console.warn("No environment group layer found.");
@@ -59,6 +59,9 @@ export const addIsland = async (app: Application) => {
   objectLayerContainer.x = mapContainer.x;
   objectLayerContainer.y = mapContainer.y;
 
+  // Collect all sprites for sorting
+  const renderQueue: { sprite: Sprite; drawY: number }[] = [];
+
   groupLayer.layers.forEach((layer: any) => {
     if (layer.type === "objectgroup" && layer.objects) {
       layer.objects.forEach((object: any) => {
@@ -72,34 +75,41 @@ export const addIsland = async (app: Application) => {
         const drawY = Math.round(isoY);
 
         if (object.name === "oak") {
-          const oak = oakTreeAnimation(drawX, drawY); // Pass position
-          objectLayerContainer.addChild(oak); // Add to the tilemap
+          const oak = oakTreeAnimation(drawX, drawY);
+          renderQueue.push({ sprite: oak, drawY });
           return;
         }
 
-        if (object.name === "Tiles") {
-          const cell_no: number = object.properties[0].value;
-          const row = Math.floor((cell_no - 1) / 5);
-          const col = (cell_no - 1) % 5;
+        if (object.name === "Tile") {
+          const cell_no: number = object.properties.find(
+            (p: any) => p.name === "grid",
+          )?.value;
 
-          const container = new Container();
-          //container.x = drawX;
-          //container.y = drawY;
-          container.position.set(drawX, drawY);
-          const cell = new Cell(container);
-          gameBoard.setCell(row, col, cell);
-          container.filters = [
+          const baseTexture = getMapTexture(4);
+          if (!baseTexture) {
+            console.warn("Missing texture for gid:", 4);
+            return;
+          }
+
+          const tileSprite = new Sprite(baseTexture);
+          tileSprite.anchor.set(0.5, 1);
+          tileSprite.position.set(drawX, drawY);
+          tileSprite.filters = [
             new GlowFilter({
               alpha: 1,
-              innerStrength: 16,
-              outerStrength: 16.5,
+              distance: 5,
+              outerStrength: 3,
+              innerStrength: 1,
+              color: 0x00ffff,
             }),
           ];
-          console.log(container);
-          objectLayerContainer.addChild(container);
+
+          renderQueue.push({ sprite: tileSprite, drawY });
+
           return;
         }
 
+        // Default: render gid-based object
         const baseTexture = getMapTexture(object.gid);
         if (!baseTexture) {
           console.warn("Missing texture for gid:", object.gid);
@@ -109,76 +119,25 @@ export const addIsland = async (app: Application) => {
         const sprite = new Sprite(baseTexture);
         sprite.anchor.set(0.5, 1);
         sprite.position.set(drawX, drawY);
-        tilemap.addChild(sprite);
+        renderQueue.push({ sprite, drawY });
       });
     }
   });
 
-  /**
-  // Loop through each object layer inside the group
-  groupLayer.layers.forEach((layer: any) => {
-    if (layer.type === "objectgroup" && layer.objects) {
-      layer.objects.forEach((object: any) => {
-        const x = object.x;
-        const y = object.y;
+  // Sort by Y (iso depth)
+  renderQueue.sort((a, b) => a.drawY - b.drawY);
+  renderQueue.forEach(({ sprite }) => objectLayerContainer.addChild(sprite));
 
-        const isoX = x - y + tileWidth / 2;
-        const isoY = (x + y) / 2;
-
-        const drawX = Math.round(isoX);
-        const drawY = Math.round(isoY);
-
-        if (object.name === "oak") {
-          const oak = oakTreeAnimation(drawX, drawY); // Pass position
-          tilemap.addChild(oak); // Add to the tilemap
-          return;
-        }
-
-        if (object.name === "Tiles") {
-          const cell_no: number = object.properties[0].value;
-          const row = Math.floor((cell_no - 1) / 5);
-          const col = (cell_no - 1) % 5;
-
-          const container = new Container();
-          //container.x = drawX;
-          //container.y = drawY;
-          container.position.set(drawX, drawY);
-          const cell = new Cell(container);
-          gameBoard.setCell(row, col, cell);
-          container.filters = [
-            new GlowFilter({
-              alpha: 1,
-              innerStrength: 16,
-              outerStrength: 16.5,
-            }),
-          ];
-          console.log(container);
-          tilemap.addChild(container);
-          return;
-        }
-
-        const baseTexture = getMapTexture(object.gid);
-        if (!baseTexture) {
-          console.warn("Missing texture for gid:", object.gid);
-          return;
-        }
-
-        const sprite = new Sprite(baseTexture);
-        sprite.anchor.set(0.5, 1);
-        sprite.position.set(drawX, drawY);
-        tilemap.addChild(sprite);
-      });
-    }
-  });
-      */
-
+  // Add to main map container
   mapContainer.addChild(tilemap);
   mapContainer.addChild(objectLayerContainer);
-  // Update map container's position (centered)
+
+  // Position map in center of screen
   mapContainer.position.set(
     app.screen.width / 2 - 100,
     app.screen.height / 2 - 300,
   );
-  // 3. Add map container to the stage after setting its position
+
+  // Final: add everything to the stage
   app.stage.addChild(mapContainer);
 };
