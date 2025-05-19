@@ -23,7 +23,9 @@ export const addIsland = async (app: Application) => {
   const tileHeight = mapData.tileheight;
   const mapWidth = mapData.width;
 
-  const tileLayer = mapData.layers.find((l) => l.name === "islands");
+  const tileLayer = mapData.layers.find(
+    (l: { name: string }) => l.name === "islands",
+  );
   if (!tileLayer || tileLayer.type !== "tilelayer") {
     console.error("No valid tile layer found");
     return;
@@ -50,7 +52,9 @@ export const addIsland = async (app: Application) => {
   }
 
   // 2. Add all objects from all object layers inside the group layer, with depth sorting
-  const groupLayer = mapData.layers.find((l) => l.type === "group");
+  const groupLayer = mapData.layers.find(
+    (l: { type: string }) => l.type === "group",
+  );
   if (!groupLayer || !groupLayer.layers) {
     console.warn("No environment group layer found.");
     return;
@@ -81,10 +85,6 @@ export const addIsland = async (app: Application) => {
         }
 
         if (object.name === "Tile") {
-          const cell_no: number = object.properties.find(
-            (p: any) => p.name === "grid",
-          )?.value;
-
           const baseTexture = getMapTexture(4);
           if (!baseTexture) {
             console.warn("Missing texture for gid:", 4);
@@ -98,7 +98,7 @@ export const addIsland = async (app: Application) => {
             new GlowFilter({
               alpha: 1,
               distance: 5,
-              outerStrength: 3,
+              outerStrength: 20,
               innerStrength: 1,
               color: 0x00ffff,
             }),
@@ -135,8 +135,18 @@ export const addIsland = async (app: Application) => {
   // Position map in center of screen
   mapContainer.position.set(
     app.screen.width / 2 - 100,
-    app.screen.height / 2 - 300,
+    app.screen.height / 2 - 220,
   );
+
+  //const mapHeightPx =
+  //(mapData.width + mapData.height) * (mapData.tileheight / 2);
+  //const mapWidthPx = (mapData.width + mapData.height) * (mapData.tilewidth / 2);
+
+  //const scaleX = app.screen.width / mapWidthPx;
+  //const scaleY = app.screen.height / mapHeightPx;
+  //const scale = Math.min(scaleX, scaleY); // Keep aspect ratio
+  //mapContainer.scale.set(scale);
+  mapContainer.scale.set(0.75);
 
   // Final: add everything to the stage
   app.stage.addChild(mapContainer);

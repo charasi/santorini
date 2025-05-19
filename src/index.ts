@@ -1,5 +1,10 @@
 import { Application } from "pixi.js";
-import { setup } from "./misc/misc.ts";
+import {
+  addBackground,
+  addDisplacementEffect,
+  setup,
+  waterWaves,
+} from "./misc/misc.ts";
 import { addIsland } from "./islands/islands.ts";
 
 // create new application
@@ -18,6 +23,13 @@ const app = new Application();
   // This ensures the application is fully initialized and its canvas is added to the DOM
   // before any rendering logic or asset loading begins.
   await setup(app);
-
+  addBackground(app);
+  addDisplacementEffect(app);
   await addIsland(app);
+
+  // Add the animation callbacks to the application's ticker.
+  app.ticker.add((time) => {
+    //time.count;
+    waterWaves();
+  });
 })();
