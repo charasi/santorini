@@ -28,7 +28,7 @@ const app = new Application();
   await addIsland(app);
 
   // Add the animation callbacks to the application's ticker.
-  app.ticker.add((time) => {
+  app.ticker.add(() => {
     //time.count;
     waterWaves();
   });

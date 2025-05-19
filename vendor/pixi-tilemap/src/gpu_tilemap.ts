@@ -1,8 +1,8 @@
-import { BindGroup, ExtensionType, GpuProgram, Shader } from 'pixi.js';
-import { settings } from './settings';
-import { Tilemap } from './Tilemap';
-import { TilemapAdaptor, TilemapPipe } from './TilemapPipe';
-import { TileTextureArray } from './TileTextureArray';
+import { BindGroup, ExtensionType, GpuProgram, Shader } from "pixi.js";
+import { settings } from "./settings";
+import { Tilemap } from "./Tilemap";
+import { TilemapAdaptor, TilemapPipe } from "./TilemapPipe";
+import { TileTextureArray } from "./TileTextureArray";
 
 const gpu_tilemap_vertex = `
 struct GlobalUniforms {
@@ -71,58 +71,55 @@ fn mainFrag(
 };
 `;
 
-export class GpuTilemapAdaptor extends TilemapAdaptor
-{
-    public static extension = {
-        type: [
-            ExtensionType.WebGPUPipesAdaptor,
-        ],
-        name: 'tilemap',
-    } as const;
+export class GpuTilemapAdaptor extends TilemapAdaptor {
+  public static extension = {
+    type: [ExtensionType.WebGPUPipesAdaptor],
+    name: "tilemap",
+  } as const;
 
-    _shader: Shader = null;
-    max_textures: number = settings.TEXTURES_PER_TILEMAP;
-    bind_group: BindGroup = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  _shader: Shader = null;
+  max_textures: number = settings.TEXTURES_PER_TILEMAP;
+  bind_group: BindGroup = null;
 
-    destroy(): void
-    {
-        this._shader.destroy(true);
-        this._shader = null;
-    }
+  destroy(): void {
+    this._shader.destroy(true);
+    this._shader = null;
+  }
 
-    execute(pipe: TilemapPipe, tilemap: Tilemap): void
-    {
-        const renderer = pipe.renderer;
-        const shader = this._shader;
-        // GPU..
+  execute(pipe: TilemapPipe, tilemap: Tilemap): void {
+    const renderer = pipe.renderer;
+    const shader = this._shader;
+    // GPU..
 
-        shader.groups[0] = renderer.globalUniforms.bindGroup;
-        shader.groups[1] = tilemap.getTileset().getBindGroup();
-        shader.groups[2] = this.bind_group;
+    shader.groups[0] = renderer.globalUniforms.bindGroup;
+    shader.groups[1] = tilemap.getTileset().getBindGroup();
+    shader.groups[2] = this.bind_group;
 
-        renderer.encoder.draw({
-            geometry: tilemap.vb,
-            shader,
-            state: tilemap.state,
-            size: tilemap.rects_count * 6
-        });
-        // TODO: does it need groups?
-    }
+    renderer.encoder.draw({
+      geometry: tilemap.vb,
+      shader,
+      state: tilemap.state,
+      size: tilemap.rects_count * 6,
+    });
+    // TODO: does it need groups?
+  }
 
-    init(): void
-    {
-        this._shader = new Shader({
-            gpuProgram: GpuProgram.from({
-                vertex: { source: gpu_tilemap_vertex, entryPoint: 'mainVert' },
-                fragment: {
-                    source: gpu_tilemap_fragment
-                        .replace('//include_textures', TileTextureArray.generate_gpu_textures(this.max_textures))
-                },
-            })
-        });
+  init(): void {
+    this._shader = new Shader({
+      gpuProgram: GpuProgram.from({
+        vertex: { source: gpu_tilemap_vertex, entryPoint: "mainVert" },
+        fragment: {
+          source: gpu_tilemap_fragment.replace(
+            "//include_textures",
+            TileTextureArray.generate_gpu_textures(this.max_textures),
+          ),
+        },
+      }),
+    });
 
-        this.bind_group = new BindGroup({
-            ut: this.pipe_uniforms
-        });
-    }
+    this.bind_group = new BindGroup({
+      ut: this.pipe_uniforms,
+    });
+  }
 }

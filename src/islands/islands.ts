@@ -1,10 +1,11 @@
 import { loadMapAssets, mapData, getMapTexture } from "../misc/misc.ts";
 import { Application, Texture, Sprite, Container } from "pixi.js";
-import { CompositeTilemap } from "@tilemap/CompositeTilemap";
 import { oakTreeAnimation } from "../animations/oak-tree.ts";
 import { Board } from "../core/Board.ts";
-import { Cell } from "../core/Cell.ts";
+//import { Cell } from "../core/Cell.ts";
 import { GlowFilter } from "pixi-filters";
+// @ts-expect-error err
+import { CompositeTilemap } from "@tilemap/CompositeTilemap";
 
 export const mapContainer = new Container();
 export const tilemap = new CompositeTilemap();
@@ -66,8 +67,10 @@ export const addIsland = async (app: Application) => {
   // Collect all sprites for sorting
   const renderQueue: { sprite: Sprite; drawY: number }[] = [];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   groupLayer.layers.forEach((layer: any) => {
     if (layer.type === "objectgroup" && layer.objects) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       layer.objects.forEach((object: any) => {
         const x = object.x;
         const y = object.y;
@@ -80,6 +83,7 @@ export const addIsland = async (app: Application) => {
 
         if (object.name === "oak") {
           const oak = oakTreeAnimation(drawX, drawY);
+          // @ts-expect-error err
           renderQueue.push({ sprite: oak, drawY });
           return;
         }

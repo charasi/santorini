@@ -1,7 +1,6 @@
 import { defineConfig } from "vite";
-import path from "path";
+import * as path from "path"; // Use this if esModuleInterop is NOT set
 
-// https://vite.dev/config/
 export default defineConfig({
   server: {
     port: 8080,
@@ -11,7 +10,7 @@ export default defineConfig({
     alias: {
       "@tilemap/CompositeTilemap": path.resolve(
         __dirname,
-        "src/vendor/pixi-tilemap/src/index.ts",
+        "vendor/pixi-tilemap/dist/index.js",
       ),
     },
   },

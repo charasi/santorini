@@ -23,9 +23,11 @@
 
     "baseUrl": ".",
     "paths": {
-      "@tilemap/CompositeTilemap": ["src/vendor/pixi-tilemap/src/index.ts"]
+      "@tilemap/CompositeTilemap": ["vendor/pixi-tilemap/dist/index.js"]
     }
   },
   "include": ["src"],
-  "exclude": ["src/vendor"]
+  "exclude": [
+    "vendor"
+  ]
 }

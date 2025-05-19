@@ -8,13 +8,16 @@
     "esModuleInterop": true,
     "strict": true,
     "skipLibCheck": true,
-
+    "noImplicitAny": false,
     "moduleResolution": "node",
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
-      "pixi.js": ["../../node_modules/pixi.js"]
+      "pixi.js": ["../../node_modules/pixi.js"],
+      "@tilemap/CompositeTilemap": ["vendor/pixi-tilemap/dist/index.js"]
     }
   },
-  "include": ["src"],
+  "include": [
+    "src"
+  ]
 }
 
