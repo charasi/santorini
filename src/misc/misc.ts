@@ -32,41 +32,39 @@ export const setup = async (app: Application<Renderer>): Promise<void> => {
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 };
 
-(async () => {
-  // add bundle of asssets
-  await Assets.load([
-    { alias: "background", src: "/assets/ocean.png" },
-    { alias: "displacement", src: "/assets/displacement_map.png" },
-    {
-      alias: "mapData",
-      src: "/src/json/santorini-map.json",
-    },
-    {
-      alias: "waterTexture",
-      src: "/assets/water.png",
-    },
-    {
-      alias: "blockTileTexture",
-      src: "/assets/block-tile.png",
-    },
-    {
-      alias: "rockTileTexture",
-      src: "/assets/rock.png",
-    },
-    {
-      alias: "oakTreeSkeleton",
-      src: "/src/json/oak-tree.json",
-    },
-    {
-      alias: "oakTreeAtlas",
-      src: "/src/atlas/oak-tree.atlas",
-    },
-    {
-      alias: "tileTexture",
-      src: "/assets/tile.png",
-    },
-  ]);
-})();
+// add bundle of asssets
+await Assets.load([
+  { alias: "background", src: "/assets/ocean.png" },
+  { alias: "displacement", src: "/assets/displacement_map.png" },
+  {
+    alias: "mapData",
+    src: "/src/json/santorini-map.json",
+  },
+  {
+    alias: "waterTexture",
+    src: "/assets/water.png",
+  },
+  {
+    alias: "blockTileTexture",
+    src: "/assets/block-tile.png",
+  },
+  {
+    alias: "rockTileTexture",
+    src: "/assets/rock.png",
+  },
+  {
+    alias: "oakTreeSkeleton",
+    src: "/src/json/oak-tree.json",
+  },
+  {
+    alias: "oakTreeAtlas",
+    src: "/src/atlas/oak-tree.atlas",
+  },
+  {
+    alias: "tileTexture",
+    src: "/assets/tile.png",
+  },
+]);
 
 /**
  * Loads map-related assets asynchronously using PixiJS Assets loader.
