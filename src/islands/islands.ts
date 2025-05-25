@@ -3,7 +3,6 @@ import { Application, Texture, Sprite, Container } from "pixi.js";
 import { CompositeTilemap } from "@tilemap/CompositeTilemap";
 import { oakTreeAnimation } from "../animations/oak-tree.ts";
 import { Board } from "../core/Board.ts";
-import { Cell } from "../core/Cell.ts";
 import { GlowFilter } from "pixi-filters";
 
 export const mapContainer = new Container();
@@ -19,13 +18,25 @@ export const addIsland = async (app: Application) => {
     return;
   }
 
+  // tilewidth x tileheight = 64x32
+
   const tileWidth = mapData.tilewidth;
   const tileHeight = mapData.tileheight;
+
+  // map width 22, height is 16 = (22x16 is 352 tiles)
   const mapWidth = mapData.width;
 
+  // screen width = (mapWidth + mapHeight) * TILE_WIDTH_HALF
+  // screen height = (mapWidth + mapHeight) * TILE_HEIGHT_HALF
+
+  // Width: (22 + 16) * 32 = 38 * 32 = 1216 px
+  // Height: (22 + 16) * 16 = 38 * 16 = 608 px
+
+  // get json island object
   const tileLayer = mapData.layers.find(
     (l: { name: string }) => l.name === "islands",
   );
+  // return if no valid tile layer found
   if (!tileLayer || tileLayer.type !== "tilelayer") {
     console.error("No valid tile layer found");
     return;
@@ -36,18 +47,36 @@ export const addIsland = async (app: Application) => {
     const gid = tileLayer.data[i];
     if (gid === 0) continue;
 
+    // Calculate the column and row in the tilemap grid from the 1D tile index `i`
+    // NOTE: In TILED MAP EDITOR X = column index and Y = row index
+    // mapWidth is the number of columns
+
+    // Calculate the column (x position) of the tile within the map grid
+    // i % mapWidth gives you the current x (column) index in the grid
+    // This gives the horizontal position across the map.
     const col = i % mapWidth;
+
+    // Calculate the row (y position) of the tile within the map grid
+    // This gives the vertical position (how many full rows fit before index `i`)
     const row = Math.floor(i / mapWidth);
 
-    const isoX = (col - row) * (tileWidth / 2);
-    const isoY = (col + row) * (tileHeight / 2);
+    // Convert grid coordinates to isometric screen coordinates
+    const isoX = (col - row) * (tileWidth / 2); // Horizontal screen position
+    const isoY = (col + row) * (tileHeight / 2); // Vertical screen position
 
+    // Get the base texture for the current tile GID (graphic ID)
     const baseTexture = getMapTexture(gid);
-    if (!baseTexture) continue;
+    if (!baseTexture) continue; // Skip if no texture found for this GID
 
+    // Create a texture instance from the base texture
     const texture = new Texture(baseTexture);
-    const drawY = isoY - (texture.height - tileHeight); // Align base tile vertically
 
+    // Adjust Y to align the bottom of the tile (diamond) to the isometric grid
+    // This is important if the texture is taller than a single tile (e.g., a tall object/building)
+    // i.e keep height texture in the isometric grid
+    const drawY = isoY - (texture.height - tileHeight);
+
+    // Draw the tile at the calculated screen position
     tilemap.tile(texture, isoX, drawY);
   }
 
@@ -100,7 +129,7 @@ export const addIsland = async (app: Application) => {
               distance: 5,
               outerStrength: 20,
               innerStrength: 1,
-              color: 0x00ffff,
+              color: 0xffffff,
             }),
           ];
 
@@ -138,14 +167,6 @@ export const addIsland = async (app: Application) => {
     app.screen.height / 2 - 220,
   );
 
-  //const mapHeightPx =
-  //(mapData.width + mapData.height) * (mapData.tileheight / 2);
-  //const mapWidthPx = (mapData.width + mapData.height) * (mapData.tilewidth / 2);
-
-  //const scaleX = app.screen.width / mapWidthPx;
-  //const scaleY = app.screen.height / mapHeightPx;
-  //const scale = Math.min(scaleX, scaleY); // Keep aspect ratio
-  //mapContainer.scale.set(scale);
   mapContainer.scale.set(0.75);
 
   // Final: add everything to the stage

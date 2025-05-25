@@ -40,10 +40,6 @@ await Assets.load([
     src: "/src/json/santorini-map.json",
   },
   {
-    alias: "waterTexture",
-    src: "/assets/water.png",
-  },
-  {
     alias: "blockTileTexture",
     src: "/assets/block-tile.png",
   },

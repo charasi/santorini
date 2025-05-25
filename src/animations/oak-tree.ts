@@ -20,24 +20,5 @@ export const oakTreeAnimation = (x: number, y: number) => {
   // Position tree (shift up to sit on the tile nicely)
   oakTree.position.set(x, y - oakTree.height * 0.5);
 
-  // Shadow direction (in radians)
-
-  /**
-  // ✅ Add drop shadow filter
-  oakTree.filters = [
-    new DropShadowFilter({
-      alpha: 0.423,
-      blur: 0,
-      color: 0x000000,
-      kernels: [0, 0],
-      //offset: { x: -30, y: -4 },
-      offset: { x: 50, y: 50 },
-      pixelSize: [1, 1],
-      quality: 4,
-      shadowOnly: false, // true = only shadow, false = object + shadow
-    }),
-  ];
-      */
-
   return oakTree;
 };
