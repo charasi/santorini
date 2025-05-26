@@ -10,6 +10,8 @@ export const tilemap = new CompositeTilemap();
 export const gameBoard = new Board();
 export const objectLayerContainer = new Container();
 
+let sprite: Sprite;
+
 export const addIsland = async (app: Application) => {
   await loadMapAssets();
 
@@ -89,9 +91,6 @@ export const addIsland = async (app: Application) => {
     return;
   }
 
-  objectLayerContainer.x = mapContainer.x;
-  objectLayerContainer.y = mapContainer.y;
-
   // Collect all sprites for sorting
   const renderQueue: { sprite: Sprite; drawY: number }[] = [];
 
@@ -113,17 +112,31 @@ export const addIsland = async (app: Application) => {
           return;
         }
 
-        if (object.name === "Tile") {
-          const baseTexture = getMapTexture(4);
-          if (!baseTexture) {
-            console.warn("Missing texture for gid:", 4);
-            return;
-          }
+        if (object.gid !== 3 && object.gid !== 4) {
+          return;
+        }
 
-          const tileSprite = new Sprite(baseTexture);
-          tileSprite.anchor.set(0.5, 1);
-          tileSprite.position.set(drawX, drawY);
-          tileSprite.filters = [
+        const baseTexture = getMapTexture(object.gid);
+        if (!baseTexture) {
+          console.warn("Missing texture for gid:", object.gid);
+          return;
+        }
+        sprite = new Sprite(baseTexture);
+        sprite.anchor.set(0.5, 1);
+
+        console.log("sam");
+
+        if (object.gid === 4) {
+          //const baseTexture = getMapTexture(4);
+          //if (!baseTexture) {
+          //console.warn("Missing texture for gid:", 4);
+          //return;
+          //}
+
+          //const tileSprite = new Sprite(baseTexture);
+          //tileSprite.anchor.set(0.5, 1);
+          //tileSprite.position.set(drawX, drawY);
+          sprite.filters = [
             new GlowFilter({
               alpha: 1,
               distance: 5,
@@ -133,22 +146,26 @@ export const addIsland = async (app: Application) => {
             }),
           ];
 
-          renderQueue.push({ sprite: tileSprite, drawY });
+          //renderQueue.push({ sprite: sprite, drawY });
 
-          return;
+          //return;
         }
 
         // Default: render gid-based object
-        const baseTexture = getMapTexture(object.gid);
-        if (!baseTexture) {
-          console.warn("Missing texture for gid:", object.gid);
-          return;
-        }
+        //const baseTexture = getMapTexture(object.gid);
+        //const baseTexture = getMapTexture(object.gid);
+        //if (!baseTexture) {
+        //console.warn("Missing texture for gid:", object.gid);
+        //return;
+        //}
 
-        const sprite = new Sprite(baseTexture);
-        sprite.anchor.set(0.5, 1);
+        //const sprite = new Sprite(baseTexture);
+        //sprite.anchor.set(0.5, 1);
+
+        // Use converted isometric draw position
         sprite.position.set(drawX, drawY);
-        renderQueue.push({ sprite, drawY });
+
+        renderQueue.push({ sprite, drawY }); // This drawY is used for depth sorting
       });
     }
   });

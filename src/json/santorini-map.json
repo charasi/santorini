@@ -181,6 +181,12 @@
                          "height":40,
                          "id":6,
                          "name":"",
+                         "properties":[
+                                {
+                                 "name":"object-type",
+                                 "type":"string",
+                                 "value":"rock"
+                                }],
                          "rotation":0,
                          "type":"",
                          "visible":true,
