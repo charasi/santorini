@@ -9,13 +9,19 @@ import {
 } from "pixi.js";
 
 export let mapData: any = null;
-export let waterTexture: Texture;
 export let blockTileTexture: Texture;
-export let palmTileTexture: Texture;
 export let rockTileTexture: Texture;
 export let tileTexture: Texture;
 export let background: TilingSprite;
 export let displacementSprite: Sprite;
+export let bottomBlockTexture: Texture;
+export let middleBlockTexture: Texture;
+export let topBlockTexture: Texture;
+export let domeBlockTexture: Texture;
+export let blueFemaleWorkerTexture: Texture;
+export let blueMaleWorkerTexture: Texture;
+export let brownFemaleWorkerTexture: Texture;
+export let brownMaleWorkerTexture: Texture;
 
 /**
  * Sets up the PixiJS application with initial configuration.
@@ -59,6 +65,39 @@ await Assets.load([
     alias: "tileTexture",
     src: "/assets/tile.png",
   },
+
+  {
+    alias: "bottomBlockTexture",
+    src: "/assets/level-1.png",
+  },
+  {
+    alias: "middleBlockTexture",
+    src: "/assets/level-2.png",
+  },
+  {
+    alias: "topBlockTexture",
+    src: "/assets/level-3.png",
+  },
+  {
+    alias: "domeBlockTexture",
+    src: "/assets/dome.png",
+  },
+  {
+    alias: "blueFemaleWorkerTexture",
+    src: "/assets/blue-female.png",
+  },
+  {
+    alias: "blueMaleWorkerTexture",
+    src: "/assets/blue-male.png",
+  },
+  {
+    alias: "brownFemaleWorkerTexture",
+    src: "/assets/brown-female.png",
+  },
+  {
+    alias: "brownMaleWorkerTexture",
+    src: "/assets/brown-male.png",
+  },
 ]);
 
 /**
@@ -72,17 +111,22 @@ await Assets.load([
  */
 export const loadMapAssets = async () => {
   // Assign the loaded assets to the exported variables
-  mapData = Assets.get("mapData"); // JSON map data
-  waterTexture = Texture.from("waterTexture"); // Water texture
-  blockTileTexture = Texture.from("blockTileTexture"); // Block tile texture
-  rockTileTexture = Texture.from("rockTileTexture");
-  tileTexture = Texture.from("tileTexture");
+  mapData = Assets.get("mapData");
+  blockTileTexture = Assets.get("blockTileTexture");
+  rockTileTexture = Assets.get("rockTileTexture");
+  tileTexture = Assets.get("tileTexture");
+  bottomBlockTexture = Assets.get("bottomBlockTexture");
+  middleBlockTexture = Assets.get("middleBlockTexture");
+  topBlockTexture = Assets.get("topBlockTexture");
+  domeBlockTexture = Assets.get("domeBlockTexture");
+  blueFemaleWorkerTexture = Assets.get("blueFemaleWorkerTexture");
+  blueMaleWorkerTexture = Assets.get("blueMaleWorkerTexture");
+  brownFemaleWorkerTexture = Assets.get("brownFemaleWorkerTexture");
+  brownMaleWorkerTexture = Assets.get("brownMaleWorkerTexture");
 };
 
 export const getMapTexture = (gid: number) => {
   switch (gid) {
-    case 1:
-      return waterTexture;
     case 2:
       return blockTileTexture;
     case 3:
